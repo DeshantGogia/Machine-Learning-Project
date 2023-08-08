@@ -1,0 +1,380 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import style
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score, ConfusionMatrixDisplay
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+
+
+# # 1. Importing dataset and display top 5 rows of the dataset.
+
+# In[2]:
+
+
+wine_df = pd.read_csv('WineQuality-Red.csv')
+wine_df.head()
+
+
+# # 2. Check last 5 rows of the dataset
+
+# In[3]:
+
+
+wine_df.tail()
+
+
+# # 3. Finding shape of our Dataset (no. of rows and column). 
+
+# In[4]:
+
+
+wine_df.shape
+
+
+# In[5]:
+
+
+print("Number of rows",wine_df.shape[0])
+print("Number of columns",wine_df.shape[1])
+
+
+# # 4. Get information about our dataset like total no. of rows and column,datatype of each column and memory requirement
+
+# In[6]:
+
+
+wine_df.info()
+
+
+# # 5. check null value in the dataset
+
+# In[7]:
+
+
+wine_df.isnull().sum()
+
+
+# #  6. Get overall statistics about the dataset
+
+# In[8]:
+
+
+wine_df.describe()
+
+
+# In[9]:
+
+
+wine_df['quality'].value_counts()
+
+
+# In[10]:
+
+
+style.use('ggplot')
+sns.countplot(wine_df['quality'])
+
+
+# # 7. Plotting Histogram
+
+# In[11]:
+
+
+wine_df.hist(bins=100, figsize=(10,12))
+plt.show()
+
+
+# #  8. correlation matrix
+
+# In[12]:
+
+
+plt.figure(figsize=(10,7))
+sns.heatmap(wine_df.corr(), annot=True)
+plt.title('Correlation between the columns')
+plt.show()
+
+
+# In[13]:
+
+
+wine_df.corr()['quality'].sort_values()
+
+
+# # 9. Quality vs Alcohol
+
+# In[14]:
+
+
+sns.barplot(x='quality', y='alcohol' , data=wine_df)
+plt.xlabel('Quality')
+plt.ylabel('Alcohol')
+plt.show()
+
+
+# # 10  binarization of target variable
+
+# In[15]:
+
+
+wine_df['quality'] = wine_df.quality.apply(lambda x:1 if x>=7 else 0)
+
+
+# In[16]:
+
+
+wine_df['quality'].value_counts()
+
+
+# # 11 Store feature matrix in X and response(target) in vector y
+
+# In[17]:
+
+
+X = wine_df.drop('quality', axis=1)
+y = wine_df['quality']
+
+
+# # 12 spilitting the dataset into the training set and test set
+
+# In[18]:
+
+
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.3, random_state=42)
+
+
+# In[19]:
+
+
+print("X_train ", X_train.shape)
+print("y_train ", y_train.shape)
+print("X_test ", X_test.shape)
+print("y_test ", y_test.shape)
+
+
+# # 13. logistic regression¶
+
+# In[20]:
+
+
+logreg = LogisticRegression()
+logreg.fit(X_train, y_train)
+logreg_pred = logreg.predict(X_test)
+logreg_acc = accuracy_score(logreg_pred, y_test)
+print("test accuracy is: {:.2f}%".format(logreg_acc*100))
+
+
+# In[21]:
+
+
+print(classification_report(y_test, logreg_pred))
+
+
+# In[22]:
+
+
+style.use('classic')
+cm = confusion_matrix(y_test, logreg_pred, labels=logreg.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix= cm, display_labels=logreg.classes_)
+disp.plot()
+print("TN: ", cm[0][0])
+print("FN: ", cm[1][0])
+print("TP: ", cm[1][1])
+print("FP: ", cm[0][1])
+
+
+# # 14 Decision Tree
+
+# In[23]:
+
+
+dtree = DecisionTreeClassifier()
+dtree.fit(X_train, y_train)
+dtree_pred = dtree.predict(X_test)
+dtree_acc = accuracy_score(dtree_pred, y_test)
+print("Test accuracy: {:.2f}%".format(dtree_acc*100))
+
+
+# In[24]:
+
+
+print(classification_report(y_test, dtree_pred))
+
+
+# In[25]:
+
+
+style.use('classic')
+cm = confusion_matrix(y_test, dtree_pred, labels=dtree.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix= cm, display_labels=dtree.classes_)
+disp.plot()
+print("TN: ", cm[0][0])
+print("FN: ", cm[1][0])
+print("TP: ", cm[1][1])
+print("FP: ", cm[0][1])
+
+
+# # 15 Random Forest
+
+# In[26]:
+
+
+rforest = RandomForestClassifier()
+rforest.fit(X_train, y_train)
+rforest_pred = rforest.predict(X_test)
+rforest_acc = accuracy_score(rforest_pred, y_test)
+print("Test accuracy: {:.2f}%".format(rforest_acc*100))
+
+
+# In[27]:
+
+
+print(classification_report(y_test, rforest_pred))
+
+
+# In[28]:
+
+
+style.use('classic')
+cm = confusion_matrix(y_test, rforest_pred, labels=rforest.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix= cm, display_labels=rforest.classes_)
+disp.plot()
+print("TN: ", cm[0][0])
+print("FN: ", cm[1][0])
+print("TP: ", cm[1][1])
+print("FP: ", cm[0][1])
+
+
+# # 16 KNeighbors classifier(KNN)
+
+# In[29]:
+
+
+knn = KNeighborsClassifier()
+knn.fit(X_train, y_train)
+knn_pred = knn.predict(X_test)
+knn_acc = accuracy_score(knn_pred, y_test)
+print("Test accuracy: {:.2f}%".format(knn_acc*100))
+
+
+# In[30]:
+
+
+print(classification_report(y_test, knn_pred))
+
+
+# In[31]:
+
+
+style.use('classic')
+cm = confusion_matrix(y_test, knn_pred, labels=knn.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix= cm, display_labels=knn.classes_)
+disp.plot()
+print("TN: ", cm[0][0])
+print("FN: ", cm[1][0])
+print("TP: ", cm[1][1])
+print("FP: ", cm[0][1])
+
+
+# # 17 gradient boosting classifier
+
+# In[32]:
+
+
+gbc = GradientBoostingClassifier()
+gbc.fit(X_train, y_train)
+gbc_pred = gbc.predict(X_test)
+gbc_acc = accuracy_score(gbc_pred, y_test)
+print("Test accuracy: {:.2f}%".format(gbc_acc*100))
+
+
+# In[33]:
+
+
+print(classification_report(y_test, gbc_pred))
+
+
+# In[34]:
+
+
+style.use('classic')
+cm = confusion_matrix(y_test, gbc_pred, labels=gbc.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix= cm, display_labels=gbc.classes_)
+disp.plot()
+print("TN: ", cm[0][0])
+print("FN: ", cm[1][0])
+print("TP: ", cm[1][1])
+print("FP: ", cm[0][1])
+
+
+# # 18. comparison of accuracy of the algorithms used
+
+# In[35]:
+
+
+final_data= pd.DataFrame({'Models':['LR','DT','RF','KNN','GBC'],
+                         'ACC':[accuracy_score(y_test,logreg_pred)*100,
+                         accuracy_score(y_test,dtree_pred)*100,
+                         accuracy_score(y_test,rforest_pred)*100,
+                         accuracy_score(y_test,knn_pred)*100,
+                         accuracy_score(y_test,gbc_pred)*100 ]})
+
+
+# In[36]:
+
+
+final_data
+
+
+# In[37]:
+
+
+sns.barplot(x='Models' , y='ACC' , data=final_data)
+
+
+# # displaying the model in the algorithm with highest accuracy
+
+# In[38]:
+
+
+X= wine_df.drop('quality',axis=1)
+
+
+# In[39]:
+
+
+y= wine_df['quality']
+
+
+# In[40]:
+
+
+from sklearn.ensemble import RandomForestClassifier
+rforest = RandomForestClassifier()
+rforest.fit(X_train, y_train)
+rforest_pred = rforest.predict(X_test)
+rforest_acc = accuracy_score(rforest_pred, y_test)
+print("Test accuracy: {:.2f}%".format(rforest_acc*100))
+
+
+# In[ ]:
+
+
+
+
+
